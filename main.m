@@ -2,7 +2,7 @@ clear
 clc
 close all
 
-foto='warped3.jpg';
+foto='Ejemplo.jpg';
 im=iread(foto,'double');
 
 frameCorner=getCorners(im);

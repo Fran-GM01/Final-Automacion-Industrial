@@ -1,14 +1,13 @@
 function [endPoints,realDistance]=getLineCoordinates(img,corners)
 
 img=imono(img);
-
 minU=min(corners(:,1));
 maxU=max(corners(:,1));
 
 minV=min(corners(:,2));
 maxV=max(corners(:,2));
 
-offset=20; %offset de 15 pixeles
+offset=40; %offset de pixeles para recortar la imagen
 
 uSize=size(img,2);
 vSize=size(img,1);
@@ -16,15 +15,17 @@ vSize=size(img,1);
 cropedImage=ones(vSize,uSize);
 cropedImage(minV+offset:maxV-offset,minU+offset:maxU-offset)=img(minV+offset:maxV-offset,minU+offset:maxU-offset);
 
-t=0.4;
+t=0.5;
 cropedImageThresh=cropedImage>=t;
+
+filteredImage=imageFiltering(cropedImageThresh,'No');
 
 
 %% Deteccion de bordes
 
 K=ksobel();
-imbordeh=iconvolve(cropedImageThresh,K);
-imbordev=iconvolve(cropedImageThresh,K');
+imbordeh=iconvolve(filteredImage,K);
+imbordev=iconvolve(filteredImage,K');
 imbordenorm=((imbordeh).^2+(imbordev).^2).^0.5;
 
 imBorderThresh=imbordenorm>=0.001;
@@ -33,20 +34,16 @@ imBorderThresh(end,:)=0;
 imBorderThresh(:,1)=0;
 imBorderThresh(:,end)=0;
 
-%% Clausura
-
-S=kcircle(20);
-imBorderClosed=iclose(imBorderThresh,S);
 
 %% Deteccion de lineas
 
-imLines=Hough(imBorderClosed);
-imLines.houghThresh=0.40;
+imLines=Hough(imBorderThresh,'nbins',[800,401]);
+imLines.houghThresh=0.80;
 imLines.suppress=20;
 
-% figure
-% idisp(imBorderClosed)
-% imLines.plot
+figure
+idisp(imBorderThresh)
+imLines.plot
 
 lines=imLines.lines;
 nLines=size(lines,2);
@@ -56,7 +53,7 @@ finalImage=zeros(vSize,uSize);
 
 for iLine=1:nLines
     imLines(:,:,iLine)=generarlinea(lines(iLine).rho,lines(iLine).theta,uSize,vSize);
-    finalImage=finalImage+imBorderClosed.*imLines(:,:,iLine);   
+    finalImage=finalImage+imBorderThresh.*imLines(:,:,iLine);   
 end
 
 % figure

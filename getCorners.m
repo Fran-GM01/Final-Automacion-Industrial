@@ -1,29 +1,26 @@
-function frameCorner=getCorners(img)
+function frameCorners=getCorners(img)
 
-%% Tamano de imagen
+%% Tamaño imagen
 
-[vSize,uSize,~]=size(img);
+[vSize,uSize]=size(img);
 
-t=0.3;
+%% Eliminar la linea roja
+
 imRed=img(:,:,1);
+t=0.48;
+imThresh=imRed>=t; 
 
-imThresh=imRed>=t;  %Elimino la linea roja
-
-%% Filtrado
-
-% S=kcircle(3);
-% imClosed=iclose(imThresh,S); %Eliminar la cuadricula
-% imClosed=iopen(imClosed,S);
-
-imClosed=imThresh;
 % figure
-% idisp(imClosed)
+% idisp(imThresh)
+
+filteredImage=imageFiltering(imThresh,'No');
+
 
 %% Deteccion de bordes
-
+% 
 K=ksobel();
-imbordeh=iconvolve(imClosed,K);
-imbordev=iconvolve(imClosed,K');
+imbordeh=iconvolve(filteredImage,K);
+imbordev=iconvolve(filteredImage,K');
 imbordenorm=((imbordeh).^2+(imbordev).^2).^0.5;
 
 imBorderThresh=imbordenorm>=0.001;
@@ -35,12 +32,11 @@ imBorderThresh(:,end)=0;
 % figure
 % idisp(imBorderThresh)
 
+%% Deteccion de lineas (Hough)
 
-%% Deteccion de lineas
-
-imLines=Hough(imBorderThresh);
-imLines.houghThresh=0.42;
-imLines.suppress=22;
+imLines=Hough(imBorderThresh,'nbins',[800,401]);
+imLines.houghThresh=0.8;
+imLines.suppress=12;
 
 % figure
 % idisp(imBorderThresh)
@@ -51,34 +47,78 @@ imLines.suppress=22;
 lines=imLines.lines;
 nLines=size(lines,2);
 
-imLines=zeros(vSize,uSize,nLines);
-finalImage=zeros(vSize,uSize);
-corners=zeros(vSize,uSize);
+rho=lines.rho;
+theta=lines.theta;
 
-for iLine=1:nLines
-    imLines(:,:,iLine)=generarlinea(lines(iLine).rho,lines(iLine).theta,uSize,vSize);
-    finalImage=finalImage+imBorderThresh.*imLines(:,:,iLine);
-    corners=corners+imLines(:,:,iLine);    
+%Se prueban todas las combinaciones de linea y se buscan los puntos de interseccion
+
+%Es muy improbable que las lineas sean paralelas, por lo que se cruzan fuera de la imagen.
+%Se eliminan esos puntos
+
+intersectionPoints=zeros(nchoosek(nLines,2),2);
+iRow=1;
+
+for i=1:nLines-1
+    for j=i+1:nLines
+        
+        A=[cos(theta(i)) sin(theta(i))
+           cos(theta(j)) sin(theta(j))];
+        
+        B=[rho(i);rho(j)];
+        
+        if det(A)==0% Si la matriz es singular, las lineas son paralelas
+            intersectionPoints(iRow,:)=[-1,-1];
+        else
+            intersectionPoint=(A\B).'; %[v,u]
+
+            if intersectionPoint(1)<0 || intersectionPoint(2)<0 || ...
+               intersectionPoint(1)>vSize || intersectionPoint(2)>uSize 
+                
+                intersectionPoints(iRow,:)=[-1,-1];
+            else
+                intersectionPoints(iRow,:)=round(intersectionPoint);
+            end   
+            
+        end
+        
+        iRow=iRow+1;
+        
+    end
 end
 
-findCorner=corners==2;
+
+validRows=any(intersectionPoints>0,2);
+frameCorners=intersectionPoints(validRows,:);
+frameCorners=[frameCorners(:,2) frameCorners(:,1)]; %devuelve [u,v]
+
+% imLines=zeros(vSize,uSize,nLines); 
+% finalImage=zeros(vSize,uSize);
+% corners=zeros(vSize,uSize);
+% 
+% for iLine=1:nLines
+%     imLines(:,:,iLine)=generarlinea(lines(iLine).rho,lines(iLine).theta,uSize,vSize);
+%     finalImage=finalImage+imBorderThresh.*imLines(:,:,iLine);
+%     corners=corners+imLines(:,:,iLine);
+% end
+% 
+% findCorner=corners==2;
 % figure
 % idisp(findCorner)
 
-[fil,col]=find(findCorner);
-cornerIntersection=[col,fil]; %Cada fila es [u,v]
+% [fil,col]=find(findCorner);
+% cornerIntersection=[col,fil]; %Cada fila es [u,v]
 
-%% Eliminar esquinas en el borde de la imagen
-
-for iFil=1:length(fil)    
-    if any(cornerIntersection(iFil,:)<=3) || abs(cornerIntersection(iFil,1)-uSize)<=3 ||...
-       abs(cornerIntersection(iFil,2)-vSize)<=3  
-              
-       cornerIntersection(iFil,:)=NaN;        
-       
-    end    
-end
-
-validCorners=any(~isnan(cornerIntersection),2);
-frameCorner=cornerIntersection(validCorners,:); 
+% %% Eliminar esquinas en el borde de la imagen
+% 
+% for iFil=1:length(fil)    
+%     if any(cornerIntersection(iFil,:)<=3) || abs(cornerIntersection(iFil,1)-uSize)<=3 ||...
+%        abs(cornerIntersection(iFil,2)-vSize)<=3  
+%               
+%        cornerIntersection(iFil,:)=NaN;        
+%        
+%     end    
+% end
+% 
+% validCorners=any(~isnan(cornerIntersection),2);
+% frameCorner=cornerIntersection(validCorners,:); 
     
