@@ -1,6 +1,11 @@
 function [endPoints,realDistance]=getLineCoordinates(img,corners)
 
+imRed=img(:,:,1);
+imGreen=img(:,:,2);
+imSub=imRed-imGreen;
+
 img=imono(img);
+
 minU=min(corners(:,1));
 maxU=max(corners(:,1));
 
@@ -12,11 +17,14 @@ offset=40; %offset de pixeles para recortar la imagen
 uSize=size(img,2);
 vSize=size(img,1);
 
-cropedImage=ones(vSize,uSize);
-cropedImage(minV+offset:maxV-offset,minU+offset:maxU-offset)=img(minV+offset:maxV-offset,minU+offset:maxU-offset);
+cropedImage=zeros(vSize,uSize);
+cropedImage(minV+offset:maxV-offset,minU+offset:maxU-offset)=imSub(minV+offset:maxV-offset,minU+offset:maxU-offset);
 
-t=0.5;
+t=0.05;
 cropedImageThresh=cropedImage>=t;
+
+figure
+idisp(cropedImageThresh)
 
 filteredImage=imageFiltering(cropedImageThresh,'No');
 
@@ -38,8 +46,8 @@ imBorderThresh(:,end)=0;
 %% Deteccion de lineas
 
 imLines=Hough(imBorderThresh,'nbins',[800,401]);
-imLines.houghThresh=0.80;
-imLines.suppress=20;
+imLines.houghThresh=0.85;
+imLines.suppress=28;
 
 figure
 idisp(imBorderThresh)

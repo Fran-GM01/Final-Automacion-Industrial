@@ -2,7 +2,7 @@ clear
 clc
 close all
 
-foto='Ejemplo.jpg';
+foto='EjemploInvertido.jpg';
 im=iread(foto,'double');
 
 frameCorner=getCorners(im);

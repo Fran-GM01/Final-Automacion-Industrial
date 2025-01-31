@@ -5,11 +5,11 @@ function filteredImage=imageFiltering(img,plot)
 
 imThresh=1-img; %Se invierte la imagen
 
-S = strel("disk",4);
-imClosed=iclose(imThresh,S); %Rellenar los bordes
+S = strel("disk",5);
+imClosed=iclose(imThresh,1); %Rellenar los bordes
 
 
-S = strel("disk",6);
+S = strel("disk",1);
 imOpen=iopen(imClosed,S); %Eliminar la cuadrícula
 
 filteredImage=1-imOpen;

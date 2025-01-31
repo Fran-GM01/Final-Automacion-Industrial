@@ -7,13 +7,25 @@ function frameCorners=getCorners(img)
 %% Eliminar la linea roja
 
 imRed=img(:,:,1);
-t=0.48;
-imThresh=imRed>=t; 
+imGreen=img(:,:,2);
 
-% figure
-% idisp(imThresh)
+figure
+idisp(imRed)
+figure
+idisp(imGreen)
 
-filteredImage=imageFiltering(imThresh,'No');
+imSub=imRed-imGreen;
+
+figure
+idisp(imSub)
+
+t=-0.03;
+imThresh=imSub>t; 
+
+figure
+idisp(imThresh)
+
+filteredImage=imageFiltering(imThresh,'Yes');
 
 
 %% Deteccion de bordes
@@ -35,12 +47,12 @@ imBorderThresh(:,end)=0;
 %% Deteccion de lineas (Hough)
 
 imLines=Hough(imBorderThresh,'nbins',[800,401]);
-imLines.houghThresh=0.8;
-imLines.suppress=12;
+imLines.houghThresh=0.6;
+imLines.suppress=40;
 
-% figure
-% idisp(imBorderThresh)
-% imLines.plot
+figure
+idisp(imBorderThresh)
+imLines.plot
 
 %% Esquinas
 
