@@ -9,23 +9,23 @@ function frameCorners=getCorners(img)
 imRed=img(:,:,1);
 imGreen=img(:,:,2);
 
-figure
-idisp(imRed)
-figure
-idisp(imGreen)
+% figure
+% idisp(imRed)
+% figure
+% idisp(imGreen)
 
 imSub=imRed-imGreen;
 
 figure
 idisp(imSub)
 
-t=-0.03;
-imThresh=imSub>t; 
+t=-0.035;
+imThresh=imSub>=t; 
 
 figure
 idisp(imThresh)
 
-filteredImage=imageFiltering(imThresh,'Yes');
+filteredImage=imageFiltering(imThresh,5,'No');
 
 
 %% Deteccion de bordes

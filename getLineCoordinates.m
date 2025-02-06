@@ -1,10 +1,7 @@
 function [endPoints,realDistance]=getLineCoordinates(img,corners)
 
-imRed=img(:,:,1);
-imGreen=img(:,:,2);
-imSub=imRed-imGreen;
-
-img=imono(img);
+uSize=size(img,2);
+vSize=size(img,1);
 
 minU=min(corners(:,1));
 maxU=max(corners(:,1));
@@ -12,21 +9,33 @@ maxU=max(corners(:,1));
 minV=min(corners(:,2));
 maxV=max(corners(:,2));
 
-offset=40; %offset de pixeles para recortar la imagen
+img(isnan(img))=1;  %Se cambia el fondo negro por uno blanco
 
-uSize=size(img,2);
-vSize=size(img,1);
-
-cropedImage=zeros(vSize,uSize);
-cropedImage(minV+offset:maxV-offset,minU+offset:maxU-offset)=imSub(minV+offset:maxV-offset,minU+offset:maxU-offset);
-
-t=0.05;
-cropedImageThresh=cropedImage>=t;
+imRed=img(:,:,1);
+imGreen=img(:,:,2);
+imSub=imGreen-imRed;
 
 figure
-idisp(cropedImageThresh)
+idisp(imSub)
 
-filteredImage=imageFiltering(cropedImageThresh,'No');
+t=-0.07;
+imThresh=imSub>=t;
+
+figure
+idisp(imThresh)
+
+% img=imono(img);
+% 
+% offset=40; %offset de pixeles para recortar la imagen
+% 
+% cropedImage=zeros(vSize,uSize);
+% cropedImage(minV+offset:maxV-offset,minU+offset:maxU-offset)=imSub(minV+offset:maxV-offset,minU+offset:maxU-offset);
+
+% 
+% figure
+% idisp(cropedImageThresh)
+
+filteredImage=imageFiltering(imThresh,25,'No');
 
 
 %% Deteccion de bordes

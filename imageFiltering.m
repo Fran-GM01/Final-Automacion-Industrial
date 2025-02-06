@@ -1,12 +1,12 @@
-function filteredImage=imageFiltering(img,plot)
+function filteredImage=imageFiltering(img,radiusClose,plot)
 
 
 %% Obtener los bordes
 
 imThresh=1-img; %Se invierte la imagen
 
-S = strel("disk",5);
-imClosed=iclose(imThresh,1); %Rellenar los bordes
+S = strel("disk",radiusClose);
+imClosed=iclose(imThresh,S); %Rellenar los bordes
 
 
 S = strel("disk",1);
