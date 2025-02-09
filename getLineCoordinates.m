@@ -15,14 +15,14 @@ imRed=img(:,:,1);
 imGreen=img(:,:,2);
 imSub=imGreen-imRed;
 
-figure
-idisp(imSub)
-
 t=-0.07;
 imThresh=imSub>=t;
-
-figure
-idisp(imThresh)
+% 
+% figure
+% idisp(imSub)
+% 
+% figure
+% idisp(imThresh)
 
 % img=imono(img);
 % 
@@ -58,9 +58,9 @@ imLines=Hough(imBorderThresh,'nbins',[800,401]);
 imLines.houghThresh=0.85;
 imLines.suppress=28;
 
-figure
-idisp(imBorderThresh)
-imLines.plot
+% figure
+% idisp(imBorderThresh)
+% imLines.plot
 
 lines=imLines.lines;
 nLines=size(lines,2);

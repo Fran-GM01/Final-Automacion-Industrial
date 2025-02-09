@@ -2,18 +2,34 @@ clear
 clc
 close all
 
-foto='Ejemplo.jpg';
-im=iread(foto,'double');
+image='EjemploEsnel.png';
 
-frameCorner=getCorners(im);
-[correctedImg,finalCorners]=warpImage(im,frameCorner);
-[endPoints,realDsitance]=getLineCoordinates(correctedImg,finalCorners);
+%% Crear el manipulador
 
-%realDistance es la distancia de los puntos a la esquina suroeste, en [m].
-%[x1 y1
-% x2 y2]
+Trossen=createRobot;
+
+%% Vision
+
+localCoordinates=visionSolver(image);
+
+%% Marco de la hoja
+
+frameOffset = 90;
+frameLength = 150;
+frameHeight = 200;
 
 figure
-idisp(correctedImg)
 hold on
-plot(endPoints(:,1),endPoints(:,2),'*b')
+createFrame(frameOffset,frameHeight,frameLength,30)
+
+%% Trayectoria
+
+globalLineCoordinates=zeros(2);
+
+for i=1:2
+    globalLineCoordinates(i,1)=frameOffset+1000*localCoordinates(i,2);
+    globalLineCoordinates(i,2)=frameHeight/2-1000*localCoordinates(i,1);
+end
+
+getTrajectory(Trossen,globalLineCoordinates(1,:),globalLineCoordinates(2,:));
+

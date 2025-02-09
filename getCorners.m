@@ -16,14 +16,13 @@ imGreen=img(:,:,2);
 
 imSub=imRed-imGreen;
 
-figure
-idisp(imSub)
-
 t=-0.035;
 imThresh=imSub>=t; 
 
-figure
-idisp(imThresh)
+% figure
+% idisp(imSub)
+% figure
+% idisp(imThresh)
 
 filteredImage=imageFiltering(imThresh,5,'No');
 
@@ -50,9 +49,9 @@ imLines=Hough(imBorderThresh,'nbins',[800,401]);
 imLines.houghThresh=0.6;
 imLines.suppress=40;
 
-figure
-idisp(imBorderThresh)
-imLines.plot
+% figure
+% idisp(imBorderThresh)
+% imLines.plot
 
 %% Esquinas
 
@@ -103,34 +102,4 @@ validRows=any(intersectionPoints>0,2);
 frameCorners=intersectionPoints(validRows,:);
 frameCorners=[frameCorners(:,2) frameCorners(:,1)]; %devuelve [u,v]
 
-% imLines=zeros(vSize,uSize,nLines); 
-% finalImage=zeros(vSize,uSize);
-% corners=zeros(vSize,uSize);
-% 
-% for iLine=1:nLines
-%     imLines(:,:,iLine)=generarlinea(lines(iLine).rho,lines(iLine).theta,uSize,vSize);
-%     finalImage=finalImage+imBorderThresh.*imLines(:,:,iLine);
-%     corners=corners+imLines(:,:,iLine);
-% end
-% 
-% findCorner=corners==2;
-% figure
-% idisp(findCorner)
-
-% [fil,col]=find(findCorner);
-% cornerIntersection=[col,fil]; %Cada fila es [u,v]
-
-% %% Eliminar esquinas en el borde de la imagen
-% 
-% for iFil=1:length(fil)    
-%     if any(cornerIntersection(iFil,:)<=3) || abs(cornerIntersection(iFil,1)-uSize)<=3 ||...
-%        abs(cornerIntersection(iFil,2)-vSize)<=3  
-%               
-%        cornerIntersection(iFil,:)=NaN;        
-%        
-%     end    
-% end
-% 
-% validCorners=any(~isnan(cornerIntersection),2);
-% frameCorner=cornerIntersection(validCorners,:); 
     
